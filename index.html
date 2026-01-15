@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto EARN HUB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #0f172a; color: white; font-family: sans-serif; }
+        .crypto-card { background: #1e293b; padding: 20px; border-radius: 15px; border: 1px solid #334155; }
+    </style>
+</head>
+<body>
+    <nav class="p-5 bg-slate-900 flex justify-between items-center">
+        <div class="text-2xl font-bold text-pink-500">💰 CryptoDash</div>
+        <div id="balance-display" class="bg-black/40 px-4 py-2 rounded-lg border border-pink-500/30 text-yellow-400 font-mono">0.0000 COIN</div>
+    </nav>
+
+    <div class="p-10 text-center">
+        <h1 class="text-4xl font-bold mb-10">Живые курсы и сбор монет</h1>
+        
+        <div id="cryptoGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <p>Загрузка цен с CoinGecko...</p>
+        </div>
+
+        <hr class="border-slate-700 my-10">
+
+        <div class="bg-slate-800 p-10 rounded-3xl inline-block border-2 border-pink-500/50">
+            <h2 class="text-2xl mb-4">Бесплатный Кран</h2>
+            <button onclick="claim()" id="claimBtn" class="bg-pink-600 hover:bg-pink-700 px-10 py-4 rounded-2xl font-bold text-xl transition-all">СОБРАТЬ 0.0050</button>
+        </div>
+    </div>
+
+    <script>
+        let balance = 0;
+        // 1. Получаем цены
+        async function getPrices() {
+            const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=6&page=1');
+            const data = await res.json();
+            const grid = document.getElementById('cryptoGrid');
+            grid.innerHTML = data.map(c => `
+                <div class="crypto-card">
+                    <h3 class="text-xl text-pink-500 font-bold">${c.name}</h3>
+                    <p class="text-2xl font-mono mt-2">$${c.current_price.toLocaleString()}</p>
+                    <p class="text-sm ${c.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}">${c.price_change_percentage_24h.toFixed(2)}%</p>
+                </div>
+            `).join('');
+        }
+        // 2. Сбор монет
+        function claim() {
+            balance += 0.0050;
+            document.getElementById('balance-display').innerText = balance.toFixed(4) + " COIN";
+            const btn = document.getElementById('claimBtn');
+            btn.disabled = true;
+            btn.innerText = "ГОТОВО!";
+            setTimeout(() => { btn.disabled = false; btn.innerText = "СОБРАТЬ 0.0050"; }, 5000);
+        }
+        getPrices();
+        setInterval(getPrices, 60000);
+    </script>
+</body>
+</html>
