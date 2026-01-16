@@ -1,185 +1,176 @@
-<!doctype html>
-<html lang="ru">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>CryptoVerse V26 PRO - Full Hub</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-/* Стили из вашего оригинального файла */
-body{margin:0;font-family:Arial,sans-serif;background:#0b0e14;color:#e7eef5;display:flex;height:100vh}
-aside{width:340px;background:#05060a;padding:15px;overflow:auto;border-right:1px solid #222}
-main{flex:1;padding:20px;overflow:auto}
-button{cursor:pointer;margin:2px;padding:6px 10px;background:#1a1f2b;color:#fff;border:1px solid #333;border-radius:4px}
-button:hover{background:#00e5ff;color:#000}
-input,select{width:100%;padding:8px;margin:4px 0;background:#000;color:#fff;border:1px solid #333}
-.nav div{padding:8px;margin:4px 0;cursor:pointer}
-.nav .active{background:#00e5ff;color:#000;font-weight:bold}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th,td{padding:8px;border-bottom:1px solid #222;text-align:left}
-.ready{color:#48bb78;font-weight:bold}
-.wait{color:#f6ad55}
-.star{cursor:pointer}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:20}
-.box{background:#05060a;padding:20px;width:360px;border:1px solid #333}
-small{color:#8fa3b8;display:block}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Dashboard Pro Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #1a1a2e; color: #e6e6e6; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        .admin-panel { background: rgba(0, 173, 181, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #00adb5; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; transition: 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-add { background: #28a745; }
+        .btn-export { background: #007bff; }
+        .btn-import { background: #6f42c1; position: relative; }
+        .btn-delete { background: #dc3545; padding: 5px 10px; font-size: 0.8rem; }
+        .btn-edit { background: #ffc107; color: #1a1a2e; padding: 5px 10px; font-size: 0.8rem; }
+        
+        input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+        
+        table { width: 100%; border-collapse: collapse; background: #222831; border-radius: 10px; overflow: hidden; }
+        th { background: #393e46; color: #00adb5; padding: 15px; text-align: left; }
+        td { padding: 12px 15px; border-bottom: 1px solid #393e46; }
+        
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222831; padding: 30px; border-radius: 15px; border: 2px solid #00adb5; z-index: 100; min-width: 400px; }
+        .modal input { width: 100%; padding: 10px; margin: 10px 0; background: #393e46; border: 1px solid #00adb5; color: white; border-radius: 5px; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 90; }
+    </style>
 </head>
 <body>
 
-<aside>
-<h3>NANSEN HUB</h3>
-<div class="nav">
-  <div class="active" onclick="setFilter('all',this)">Все</div>
-  <div onclick="setFilter('faucet',this)">Краны</div>
-  <div onclick="setFilter('program',this)">Программы</div>
-  <div onclick="setFilter('airdrop',this)">Аирдропы</div>
-</div>
-<hr>
-<input id="search" placeholder="🔍 Поиск" oninput="render()">
-<hr>
-<button onclick="updateBase()">🔄 Обновить базу</button>
-<p style="font-size:11px;margin:10px 0 2px">Загрузить краны (JSON):</p>
-<input type="file" accept=".json" onchange="loadFaucets(this.files[0])">
-<button onclick="openAdd()">➕ Добавить вручную</button>
-<hr>
-<button onclick="exportDB()">💾 Экспорт базы</button>
-<p style="font-size:11px;margin:10px 0 2px">Импорт базы (JSON):</p>
-<input type="file" accept=".json" onchange="importDB(this.files[0])">
-<button onclick="clearDB()" style="color:#f56565">🗑 Очистить всё</button>
-<div id="sidebar-ad" style="margin-top:20px; text-align:center;">
-    <small>Реклама</small>
-    <div style="width:100%; height:250px; background:#1a1f2b; border:1px dashed #333; display:flex; align-items:center; justify-content:center;">
+<div class="container">
+    <div class="admin-panel">
+        <button class="btn btn-add" onclick="showModal()"><i class="fas fa-plus"></i> Добавить кран</button>
+        <button class="btn btn-export" onclick="exportData()"><i class="fas fa-download"></i> Экспорт JSON</button>
+        <div class="btn btn-import">
+            <i class="fas fa-upload"></i> Импорт JSON
+            <input type="file" id="importFile" onchange="importData(event)">
         </div>
-</div>
-</aside>
-
-<main>
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h1>Dashboard</h1>
-        <div id="top-ad" style="width:468px; height:60px; background:#1a1f2b; border:1px dashed #333; display:flex; align-items:center; justify-content:center;">
-             <small>Место для баннера 468x60</small>
+        <div style="margin-left: auto;">
+            BTC: <span id="btc-live" style="color: #00adb5; font-weight: bold;">Загрузка...</span>
         </div>
     </div>
-<table>
-<thead>
-<tr>
-<th>★</th>
-<th>Статус</th>
-<th>Проект</th>
-<th>Таймер</th>
-<th>$ / h</th>
-<th>Тип</th>
-<th>Status</th>
-<th>Действия</th>
-</tr>
-</thead>
-<tbody id="list"></tbody>
-</table>
-</main>
+
+    <table id="mainTable">
+        <thead>
+            <tr>
+                <th>Название / ID</th>
+                <th>Тип</th>
+                <th>Награда</th>
+                <th>Таймер</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+    </table>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+<div class="modal" id="modal">
+    <h2 id="modalTitle">Редактировать проект</h2>
+    <input type="hidden" id="edit-id">
+    <input type="text" id="edit-name" placeholder="Название">
+    <input type="text" id="edit-url" placeholder="Ссылка">
+    <input type="number" id="edit-min" placeholder="Минут кулдауна">
+    <input type="number" id="edit-reward" step="0.00000001" placeholder="Награда">
+    <button class="btn btn-add" style="width: 100%;" onclick="saveProject()">Сохранить</button>
+</div>
 
 <script>
-const STORAGE='cryptoverse_v26';
-let DB=[],filter='all',editIndex=null;
+    let projects = JSON.parse(localStorage.getItem('my_crypto_data')) || [
+        { "sourceId": "f_freebitcoin", "name": "freebitco.in", "url": "https://freebitco.in/?r=galan64", "type": "faucet", "minutes": 60, "reward": 0.00002 },
+        { "sourceId": "f_viefaucet", "name": "viefaucet.com", "url": "https://viefaucet.com?r=galan64", "type": "faucet", "minutes": 4, "reward": 0.00001 }
+    ];
 
-const BASE_LIST=[
-{sourceId:'grass',name:'Grass',url:'https://app.getgrass.io/',type:'program',status:'active'},
-{sourceId:'nodepay',name:'Nodepay',url:'https://app.nodepay.ai/',type:'program',status:'active'}
-];
+    function render() {
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+        projects.forEach((p, index) => {
+            const row = `<tr>
+                <td><b>${escapeHtml(p.name)}</b><br><small>${escapeHtml(p.sourceId || 'id_'+index)}</small></td>
+                <td>${escapeHtml(p.type)}</td>
+                <td>${(p.reward * 1000000).toFixed(0)} sat</td>
+                <td>${p.minutes} min</td>
+                <td>
+                    <a href="${escapeHtml(p.url)}" target="_blank" class="btn btn-export" style="padding: 5px 8px;"><i class="fas fa-external-link-alt"></i></a>
+                    <button class="btn btn-edit" onclick="editProject(${index})"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-delete" onclick="deleteProject(${index})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+        localStorage.setItem('my_crypto_data', JSON.stringify(projects));
+    }
 
-function load(){
-    DB=JSON.parse(localStorage.getItem(STORAGE))||[];
-    updateBase(true);
-}
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
 
-function updateBase(silent=false){
-    BASE_LIST.forEach(b=>{
-        if(!DB.find(d=>d.sourceId===b.sourceId)){
-            DB.push({sourceId:b.sourceId,name:b.name,url:b.url,type:b.type,time:1440,last:0,reward:0,status:b.status,fav:false});
+    function deleteProject(index) {
+        if(confirm('Удалить этот проект?')) {
+            projects.splice(index, 1);
+            render();
         }
-    });
-    save(); render();
-}
+    }
 
-function importDB(file){
-    const r=new FileReader();
-    r.onload=e=>{
-        try {
-            DB=JSON.parse(e.target.result);
-            save(); render();
-            alert('База импортирована!');
-        } catch(err){alert('Ошибка файла');}
-    };
-    r.readAsText(file);
-}
+    function showModal(index = null) {
+        document.getElementById('modal').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+        if(index !== null) {
+            const p = projects[index];
+            document.getElementById('edit-id').value = index;
+            document.getElementById('edit-name').value = p.name;
+            document.getElementById('edit-url').value = p.url;
+            document.getElementById('edit-min').value = p.minutes;
+            document.getElementById('edit-reward').value = p.reward;
+        } else {
+            document.getElementById('edit-id').value = "";
+            document.getElementById('modal').querySelectorAll('input').forEach(i => i.value = "");
+        }
+    }
 
-function loadFaucets(file){
-    const r=new FileReader();
-    r.onload=e=>{
-        try {
-            const data=JSON.parse(e.target.result);
-            (data.faucets||[]).forEach(f=>{
-                DB.push({name:f.name||f.id,url:f.url,type:'faucet',time:Math.round((f.timer||3600)/60),last:0,reward:f.expectedReward||0,status:'active',fav:false});
-            });
-            save(); render();
-        } catch(err){alert('Ошибка в файле кранов');}
-    };
-    r.readAsText(file);
-}
+    function saveProject() {
+        const id = document.getElementById('edit-id').value;
+        const newProj = {
+            sourceId: "f_custom_" + Date.now(),
+            name: document.getElementById('edit-name').value,
+            url: document.getElementById('edit-url').value,
+            minutes: parseInt(document.getElementById('edit-min').value),
+            reward: parseFloat(document.getElementById('edit-reward').value),
+            type: "faucet"
+        };
+        if(id === "") projects.push(newProj);
+        else projects[id] = newProj;
+        closeModal();
+        render();
+    }
 
-function render(){
-    const list=document.getElementById('list');
-    list.innerHTML='';
-    const now=Date.now();
-    const q=document.getElementById('search').value.toLowerCase();
+    function exportData() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projects));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "crypto_backup.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    }
 
-    DB.filter(i=>(filter==='all'||i.type===filter) && (i.name.toLowerCase().includes(q)||i.url.toLowerCase().includes(q)))
-    .sort((a,b)=>b.fav-a.fav)
-    .forEach((i,idx)=>{
-        const left=Math.max(0,(i.last||0)+i.time*60000-now);
-        const ready=left===0;
-        const perHour=i.time?((i.reward||0)*(60/i.time)).toFixed(4):'0';
-        
-        list.innerHTML+=`<tr>
-            <td class="star" onclick="toggleFav(${idx})">${i.fav?'⭐':'☆'}</td>
-            <td class="${ready?'ready':'wait'}">${ready?'READY':'WAIT'}</td>
-            <td>${i.name}<br><small>${i.url}</small></td>
-            <td>${ready?'NOW':Math.ceil(left/60000)+'m'}</td>
-            <td>${perHour}</td>
-            <td>${i.type}</td>
-            <td>${i.status}</td>
-            <td>
-                <button onclick="openLink(${idx})">OPEN</button>
-                <button onclick="editItem(${idx})">✏</button>
-                <button onclick="deleteItem(${idx})">🗑</button>
-            </td>
-        </tr>`;
-    });
-}
+    function importData(event) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                projects = JSON.parse(e.target.result);
+                render();
+            } catch(err) {
+                alert("Ошибка чтения файла: " + err.message);
+            }
+        };
+        reader.readAsText(event.target.files[0]);
+    }
 
-function openLink(i){
-    window.open(DB[i].url,'_blank');
-    DB[i].last=Date.now();
-    save(); render();
-}
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
 
-function toggleFav(i){DB[i].fav=!DB[i].fav;save();render();}
-function save(){localStorage.setItem(STORAGE,JSON.stringify(DB))}
-function setFilter(f,el){
-    filter=f;
-    document.querySelectorAll('.nav div').forEach(d=>d.classList.remove('active'));
-    el.classList.add('active');
+    function editProject(index) { showModal(index); }
+
     render();
-}
-function exportDB(){
-    const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download='cryptoverse_backup.json';
-    a.click();
-}
-function clearDB(){if(confirm('Очистить всё?')){DB=[];save();load();render()}}
-
-load();
 </script>
 </body>
 </html>
