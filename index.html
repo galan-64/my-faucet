@@ -1,183 +1,184 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Dashboard Pro Admin</title>
+    <title>Crypto Dashboard Pro | 2026</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #1a1a2e; color: #e6e6e6; padding: 20px; }
-        .container { max-width: 1400px; margin: 0 auto; }
-        
-        .admin-panel { background: rgba(0, 173, 181, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #00adb5; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; transition: 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
-        .btn-add { background: #28a745; }
-        .btn-export { background: #007bff; }
-        .btn-import { background: #6f42c1; position: relative; }
-        .btn-delete { background: #dc3545; padding: 5px 10px; font-size: 0.8rem; }
-        .btn-edit { background: #ffc107; color: #1a1a2e; padding: 5px 10px; font-size: 0.8rem; }
-        
-        input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
-        
-        table { width: 100%; border-collapse: collapse; background: #222831; border-radius: 10px; overflow: hidden; }
-        th { background: #393e46; color: #00adb5; padding: 15px; text-align: left; }
-        td { padding: 12px 15px; border-bottom: 1px solid #393e46; }
-        
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222831; padding: 30px; border-radius: 15px; border: 2px solid #00adb5; z-index: 100; min-width: 400px; }
-        .modal input { width: 100%; padding: 10px; margin: 10px 0; background: #393e46; border: 1px solid #00adb5; color: white; border-radius: 5px; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 90; }
+        :root { --bg: #1a1c2c; --card: #24273d; --accent: #00bcd4; --success: #27ae60; --update: #007bff; --danger: #e74c3c; --text: #e0e0e0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; margin: 0; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: var(--card); padding: 20px; border-radius: 12px; display: flex; align-items: center; gap: 10px; border: 1px solid #333; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; color: white; transition: 0.2s; font-size: 0.85rem; }
+        .btn-add { background: var(--success); }
+        .btn-update { background: var(--update); } /* СИНЯЯ КНОПКА */
+        .btn-export { background: #2980b9; }
+        .btn-import { background: #8e44ad; }
+        .btc-price { margin-left: auto; font-size: 1.1rem; border-left: 1px solid #444; padding-left: 20px; }
+        .btc-price span { color: var(--accent); font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 10px; overflow: hidden; }
+        th { text-align: left; padding: 16px; color: #777; border-bottom: 2px solid #333; font-size: 0.75rem; text-transform: uppercase; }
+        td { padding: 14px 16px; border-bottom: 1px solid #2d314d; }
+        .badge { background: #00897b; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; }
+        .timer-ready { color: var(--success); font-weight: bold; animation: pulse 2s infinite; }
+        .timer-wait { color: var(--accent); font-family: monospace; }
+        .action-btns { display: flex; gap: 8px; }
+        .act-btn { width: 34px; height: 34px; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: white; }
+        .btn-run { background: #007bff; }
+        .btn-edit { background: #f1c40f; color: #1a1c2c; }
+        .btn-del { background: var(--danger); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        /* Modal */
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid var(--accent); z-index: 1000; width: 350px; }
+        .modal input, .modal select { width: 100%; padding: 10px; margin: 8px 0; background: #1a1c2c; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="admin-panel">
-        <button class="btn btn-add" onclick="showModal()"><i class="fas fa-plus"></i> Добавить кран</button>
-        <button class="btn btn-export" onclick="exportData()"><i class="fas fa-download"></i> Экспорт JSON</button>
-        <div class="btn btn-import">
-            <i class="fas fa-upload"></i> Импорт JSON
-            <input type="file" id="importFile" onchange="importData(event)">
-        </div>
-        <div style="margin-left: auto;">
-            BTC: <span id="btc-live" style="color: #00adb5; font-weight: bold;">Загрузка...</span>
-        </div>
+    <div class="header">
+        <button class="btn btn-add" onclick="openModal()"><i class="fas fa-plus"></i> Добавить</button>
+        <button class="btn btn-update" onclick="updateBase()"><i class="fas fa-sync-alt"></i> Обновить базу</button>
+        <button class="btn btn-export" onclick="exportDB()"><i class="fas fa-download"></i> Экспорт</button>
+        <button class="btn btn-import" onclick="document.getElementById('importFile').click()"><i class="fas fa-upload"></i> Импорт</button>
+        <input type="file" id="importFile" style="display:none" onchange="importDB(event)">
+        <div class="btc-price">BTC: <span id="btcVal">...</span></div>
     </div>
 
-    <table id="mainTable">
+    <table>
         <thead>
             <tr>
-                <th>Название / ID</th>
+                <th>Проект</th>
                 <th>Тип</th>
                 <th>Награда</th>
                 <th>Таймер</th>
                 <th>Действия</th>
             </tr>
         </thead>
-        <tbody id="table-body"></tbody>
+        <tbody id="tableBody"></tbody>
     </table>
 </div>
 
 <div class="overlay" id="overlay" onclick="closeModal()"></div>
 <div class="modal" id="modal">
-    <h2 id="modalTitle">Редактировать проект</h2>
-    <input type="hidden" id="edit-id">
-    <input type="text" id="edit-name" placeholder="Название">
-    <input type="text" id="edit-url" placeholder="Ссылка">
-    <input type="number" id="edit-min" placeholder="Минут кулдауна">
-    <input type="number" id="edit-reward" step="0.00000001" placeholder="Награда">
-    <button class="btn btn-add" style="width: 100%;" onclick="saveProject()">Сохранить</button>
+    <h3 style="color:var(--accent)">Проект</h3>
+    <input type="hidden" id="editIdx">
+    <input type="text" id="name" placeholder="Название">
+    <input type="text" id="url" placeholder="URL ссылка">
+    <select id="type">
+        <option value="FAUCET">FAUCET</option>
+        <option value="AIRDROP">AIRDROP</option>
+        <option value="MINING">MINING</option>
+    </select>
+    <input type="number" id="reward" placeholder="Награда">
+    <input type="number" id="time" placeholder="Минуты">
+    <button class="btn btn-add" style="width:100%" onclick="save()">Сохранить</button>
 </div>
 
 <script>
-    let projects = JSON.parse(localStorage.getItem('my_crypto_data')) || [
-        { "sourceId": "f_freebitcoin", "name": "freebitco.in", "url": "https://freebitco.in/?r=galan64", "type": "faucet", "minutes": 60, "reward": 0.00002 },
-        { "sourceId": "f_viefaucet", "name": "viefaucet.com", "url": "https://viefaucet.com?r=galan64", "type": "faucet", "minutes": 4, "reward": 0.00001 }
-    ];
+    let db = JSON.parse(localStorage.getItem('crypto_pro_db')) || [];
+
+    async function fetchBTC() {
+        try {
+            const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+            const data = await res.json();
+            document.getElementById('btcVal').innerText = '$' + data.bitcoin.usd.toLocaleString();
+        } catch (e) { }
+    }
 
     function render() {
-        const tbody = document.getElementById('table-body');
-        tbody.innerHTML = '';
-        projects.forEach((p, index) => {
-            const row = `<tr>
-                <td><b>${escapeHtml(p.name)}</b><br><small>${escapeHtml(p.sourceId || 'id_'+index)}</small></td>
-                <td>${escapeHtml(p.type)}</td>
-                <td>${(p.reward * 1000000).toFixed(0)} sat</td>
-                <td>${p.minutes} min</td>
-                <td>
-                    <a href="${escapeHtml(p.url)}" target="_blank" class="btn btn-export" style="padding: 5px 8px;"><i class="fas fa-external-link-alt"></i></a>
-                    <button class="btn btn-edit" onclick="editProject(${index})"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-delete" onclick="deleteProject(${index})"><i class="fas fa-trash"></i></button>
-                </td>
+        const body = document.getElementById('tableBody');
+        body.innerHTML = '';
+        const now = Date.now();
+        db.forEach((p, i) => {
+            const remains = p.next - now;
+            const timerCell = remains <= 0 ? 
+                '<span class="timer-ready">ГОТОВО</span>' : 
+                `<span class="timer-wait">${Math.floor(remains/60000)}m ${Math.floor((remains%60000)/1000)}s</span>`;
+
+            body.innerHTML += `<tr>
+                <td><b>${p.name}</b></td>
+                <td><span class="badge">${p.type}</span></td>
+                <td>${p.reward} sat</td>
+                <td>${timerCell}</td>
+                <td><div class="action-btns">
+                    <button class="act-btn btn-run" onclick="launch(${i})"><i class="fas fa-play"></i></button>
+                    <button class="act-btn btn-edit" onclick="edit(${i})"><i class="fas fa-edit"></i></button>
+                    <button class="act-btn btn-del" onclick="del(${i})"><i class="fas fa-trash"></i></button>
+                </div></td>
             </tr>`;
-            tbody.innerHTML += row;
         });
-        localStorage.setItem('my_crypto_data', JSON.stringify(projects));
     }
 
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+    // ЛОГИКА ОБНОВЛЕНИЯ БАЗЫ
+    function updateBase() {
+        const freshProjects = [
+            { name: "Freebitco.in", url: "https://freebitco.in/?r=ваша_ссылка", type: "FAUCET", reward: "20", minutes: 60, next: 0 },
+            { name: "VieFaucet", url: "https://viefaucet.com?r=ваша_ссылка", type: "FAUCET", reward: "50", minutes: 4, next: 0 }
+        ];
+        let count = 0;
+        freshProjects.forEach(fp => {
+            if (!db.find(item => item.name === fp.name)) {
+                db.push(fp);
+                count++;
+            }
+        });
+        localStorage.setItem('crypto_pro_db', JSON.stringify(db));
+        render();
+        alert("База обновлена! Добавлено новых проектов: " + count);
     }
 
-    function deleteProject(index) {
-        if(confirm('Удалить этот проект?')) {
-            projects.splice(index, 1);
-            render();
-        }
-    }
-
-    function showModal(index = null) {
-        document.getElementById('modal').style.display = 'block';
-        document.getElementById('overlay').style.display = 'block';
-        if(index !== null) {
-            const p = projects[index];
-            document.getElementById('edit-id').value = index;
-            document.getElementById('edit-name').value = p.name;
-            document.getElementById('edit-url').value = p.url;
-            document.getElementById('edit-min').value = p.minutes;
-            document.getElementById('edit-reward').value = p.reward;
-        } else {
-            document.getElementById('edit-id').value = "";
-            document.getElementById('modal').querySelectorAll('input').forEach(i => i.value = "");
-        }
-    }
-
-    function saveProject() {
-        const id = document.getElementById('edit-id').value;
-        const newProj = {
-            sourceId: "f_custom_" + Date.now(),
-            name: document.getElementById('edit-name').value,
-            url: document.getElementById('edit-url').value,
-            minutes: parseInt(document.getElementById('edit-min').value),
-            reward: parseFloat(document.getElementById('edit-reward').value),
-            type: "faucet"
-        };
-        if(id === "") projects.push(newProj);
-        else projects[id] = newProj;
-        closeModal();
+    function launch(i) {
+        db[i].next = Date.now() + (db[i].minutes * 60 * 1000);
+        localStorage.setItem('crypto_pro_db', JSON.stringify(db));
+        window.open(db[i].url, '_blank');
         render();
     }
 
-    function exportData() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projects));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", "crypto_backup.json");
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-    }
-
-    function importData(event) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                projects = JSON.parse(e.target.result);
-                render();
-            } catch(err) {
-                alert("Ошибка чтения файла: " + err.message);
-            }
+    function save() {
+        const idx = document.getElementById('editIdx').value;
+        const entry = {
+            name: document.getElementById('name').value,
+            url: document.getElementById('url').value,
+            type: document.getElementById('type').value,
+            reward: document.getElementById('reward').value,
+            minutes: parseInt(document.getElementById('time').value) || 0,
+            next: idx !== "" ? db[idx].next : 0
         };
-        reader.readAsText(event.target.files[0]);
+        if (idx === "") db.push(entry); else db[idx] = entry;
+        localStorage.setItem('crypto_pro_db', JSON.stringify(db));
+        closeModal(); render();
     }
 
-    function closeModal() {
-        document.getElementById('modal').style.display = 'none';
-        document.getElementById('overlay').style.display = 'none';
+    function del(i) { if(confirm("Удалить?")) { db.splice(i,1); localStorage.setItem('crypto_pro_db', JSON.stringify(db)); render(); } }
+    function edit(i) {
+        const p = db[i];
+        document.getElementById('editIdx').value = i;
+        document.getElementById('name').value = p.name;
+        document.getElementById('url').value = p.url;
+        document.getElementById('type').value = p.type;
+        document.getElementById('reward').value = p.reward;
+        document.getElementById('time').value = p.minutes;
+        openModal();
+    }
+    function openModal() { document.getElementById('modal').style.display='block'; document.getElementById('overlay').style.display='block'; }
+    function closeModal() { document.getElementById('modal').style.display='none'; document.getElementById('overlay').style.display='none'; }
+    function exportDB() {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 2)], {type: "application/json"}));
+        a.download = "crypto_db.json"; a.click();
+    }
+    function importDB(e) {
+        const reader = new FileReader();
+        reader.onload = (ev) => { db = JSON.parse(ev.target.result); render(); };
+        reader.readAsText(e.target.files[0]);
     }
 
-    function editProject(index) { showModal(index); }
-
+    setInterval(render, 1000);
+    fetchBTC();
     render();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
